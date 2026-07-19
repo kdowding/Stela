@@ -1,0 +1,72 @@
+# Stela — self-hosted artifact sharing.
+#
+# Stela trusts identity headers set by an auth proxy in front of it (oauth2-proxy,
+# Authelia, Cloudflare Access, Tailscale, Azure Easy Auth, …). It refuses to boot
+# without auth configured — an exposed container port with header-trust on would be
+# an open admin panel.
+#
+#   Production:  put your auth proxy in front of the `stela` service, point
+#                AUTH_HEADER_* at the headers your proxy injects, and NEVER
+#                publish stela's port directly.
+#   Quick demo:  `docker compose --profile demo up` — a bundled Caddy stamps a
+#                static demo identity on every request. Single-user, for trying
+#                Stela out; not an auth system.
+
+services:
+  stela:
+    build: .
+    restart: unless-stopped
+    environment:
+      # The public URL users hit — publish URLs + the CSRF origin check depend on it.
+      ORIGIN: ${ORIGIN:-http://localhost:8080}
+      AUTH_MODE: header
+      # Header names your auth proxy injects (examples: oauth2-proxy sends
+      # X-Auth-Request-User / -Email; Authelia sends Remote-User / Remote-Email).
+      AUTH_HEADER_ID: ${AUTH_HEADER_ID:-x-stela-user}
+      AUTH_HEADER_NAME: ${AUTH_HEADER_NAME:-x-stela-name}
+      AUTH_HEADER_EMAIL: ${AUTH_HEADER_EMAIL:-x-stela-email}
+      # Optional: where to send an anonymous browser (your proxy's login URL).
+      # AUTH_LOGIN_URL: https://auth.example.com/login
+      # Admin/CI publish key (min 24 chars) + the identity its publishes attribute to.
+      # STELA_API_KEY: change-me-to-a-long-random-value
+      # STELA_API_USER_ID: admin
+      # STELA_API_USER_NAME: Admin
+      STORAGE_DRIVER: sqlite
+      DATA_DIR: /data
+    volumes:
+      - stela-data:/data
+    # Intentionally no `ports:` — traffic must come through the auth proxy.
+
+  # ---- quick demo only: static identity, single user ----
+  demo-proxy:
+    profiles: ["demo"]
+    image: caddy:2-alpine
+    restart: unless-stopped
+    depends_on:
+      - stela
+    ports:
+      - "8080:8080"
+    command:
+      - caddy
+      - run
+      - --adapter
+      - caddyfile
+      - --config
+      - /etc/caddy/Caddyfile
+    configs:
+      - source: demo-caddyfile
+        target: /etc/caddy/Caddyfile
+
+configs:
+  demo-caddyfile:
+    content: |
+      :8080 {
+        reverse_proxy stela:3000 {
+          header_up x-stela-user "demo-user"
+          header_up x-stela-name "Demo User"
+          header_up x-stela-email "demo@example.com"
+        }
+      }
+
+volumes:
+  stela-data:

@@ -1,0 +1,8 @@
+packages:
+  - "packages/*"
+# esbuild (used by Vite, tsx, tsup) needs its postinstall to place the platform binary.
+onlyBuiltDependencies:
+  - esbuild
+
+allowBuilds:
+  esbuild: true

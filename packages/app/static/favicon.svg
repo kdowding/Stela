@@ -1,0 +1,11 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 32 32" width="32" height="32">
+  <!-- the cut slab -->
+  <path d="M2 8 Q2 2 8 2 H20 L30 12 V24 Q30 30 24 30 H8 Q2 30 2 24 Z" fill="#121316" />
+  <path d="M20 2 L30 12 H23 Q20 12 20 9 Z" fill="#1f2126" />
+  <!-- the boustrophedon inscription -->
+  <path
+    d="M8.5 11 H18 Q22.5 11 22.5 14.75 Q22.5 18.5 18 18.5 H13 Q8.5 18.5 8.5 22.25 Q8.5 26 13 26 H15.5"
+    stroke="#ece6d8" stroke-width="2.4" stroke-linecap="round" fill="none" />
+  <!-- the seal -->
+  <circle cx="21.5" cy="26" r="2.2" fill="#d08a4a" />
+</svg>

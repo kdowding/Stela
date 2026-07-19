@@ -1,0 +1,1345 @@
+/* =============================================================================
+   Stela design system — global foundation.
+   Tokens + base + the one unified button system + shared surfaces (menus, badges,
+   modal, sharing panel, comment overlay). Page/component-specific visuals live in
+   scoped <style> blocks (Logo, Popover, ArtifactCard, the home + viewer pages, …).
+   Brand source of truth: docs/design-system.md.
+   ============================================================================= */
+
+/* ============================================================
+   stela — the slab
+   cut basalt · ochre pigment · lapis seal
+   Kin to englyph.dev (obsidian void · gilded inscription): same
+   family, different material — stone under raking light, not void.
+   Single dark theme; artifact canvases (iframes) keep their own.
+   ============================================================ */
+:root {
+  /* pigments (constant across the app) */
+  --ochre: #d08a4a; /* red-ochre — the pigment rubbed into a stela's carvings */
+  --ochre-rgb: 208, 138, 74;
+  --ochre-bright: #e8ae74;
+  --ochre-deep: #7c521f;
+  --lapis: #647fdd; /* lapis seal — links, restricted, quiet authority */
+  --lapis-rgb: 100, 127, 221;
+  --lapis-bright: #8ba1ea;
+  --lapis-deep: #35418f;
+  --pigment-ink: #241203; /* legible ink on an ochre fill */
+  --accent: var(--ochre);
+  --accent-grad: linear-gradient(150deg, var(--ochre-bright) 0%, var(--ochre) 72%);
+  /* structural basalt (chrome + dark fills; legacy nav names kept) */
+  --ink: #101114;
+  --ink-rgb: 16, 17, 20;
+  --navy: #1f2126;
+  --darkest-navy: #0a0b0d;
+  /* the slab: surfaces + limestone foreground */
+  --surface: #1a1c21; /* cards, menus, popovers, modals */
+  --surface-2: #121316; /* app background */
+  --surface-tint: #24262d; /* hover / subtle / chips / code */
+  --fg: #ece6d8; /* limestone — headings + strong text */
+  --text: #c8c2b3; /* body text */
+  --muted: #8b867a; /* secondary text */
+  --border: #2b2d34;
+  --border-strong: #3d4049;
+  --line-ochre: rgba(208, 138, 74, 0.3); /* pigment hairline */
+  --white: #ffffff;
+  /* status (tuned for dark) */
+  --danger: #e06c55; /* ember */
+  --danger-dark: #c4503a;
+  --danger-tint: rgba(224, 108, 85, 0.15);
+  --ok: #56b681; /* malachite */
+  --ok-tint: rgba(86, 182, 129, 0.16);
+  /* shape */
+  --radius-pill: 100px;
+  --radius-card: 14px;
+  --radius-md: 10px;
+  --radius-sm: 8px;
+  --chamfer: 12px; /* the knocked corner of the slab */
+  --maxw: 1200px;
+  --font-sans: "Inter", system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+  --font-mono: "JetBrains Mono", "Cascadia Code", ui-monospace, monospace; /* the inscription register */
+  /* elevation (black-based for depth on dark) */
+  --shadow-sm: 0 1px 2px rgba(0, 0, 0, 0.3);
+  --shadow-md: 0 8px 22px rgba(0, 0, 0, 0.4);
+  --shadow-lg: 0 18px 44px rgba(0, 0, 0, 0.52);
+  --shadow-pop: 0 14px 36px rgba(0, 0, 0, 0.5);
+  /* gradients */
+  --grad-brand: linear-gradient(135deg, var(--lapis) 0%, var(--ochre) 100%);
+  --grad-blue: linear-gradient(135deg, #4d63c4 0%, #35418f 100%);
+  /* motion */
+  --ease: cubic-bezier(0.215, 0.61, 0.355, 1);
+  --t-fast: 0.14s;
+  --t-med: 0.24s;
+  /* focus (lapis ring — distinct from ochre CTAs) */
+  --focus: 0 0 0 3px rgba(var(--lapis-rgb), 0.55);
+  --focus-on-dark: 0 0 0 3px rgba(var(--lapis-rgb), 0.5);
+}
+
+* {
+  box-sizing: border-box;
+}
+html,
+body {
+  margin: 0;
+  padding: 0;
+}
+body {
+  font-family: var(--font-sans);
+  color: var(--text);
+  background: var(--surface-2);
+  line-height: 1.6;
+  -webkit-font-smoothing: antialiased;
+  text-rendering: optimizeLegibility;
+  font-variant-numeric: lining-nums tabular-nums;
+}
+h1,
+h2,
+h3 {
+  color: var(--fg);
+  letter-spacing: -0.01em;
+  line-height: 1.12;
+}
+a {
+  color: var(--lapis-bright);
+  text-decoration: none;
+}
+a:hover {
+  text-decoration: underline;
+}
+code {
+  background: var(--surface-tint);
+  padding: 0.1em 0.4em;
+  border-radius: 6px;
+  font-size: 0.9em;
+}
+/* form controls inherit the dark palette (specific rules override the background) */
+input,
+textarea {
+  background: var(--surface-tint);
+  color: var(--text);
+}
+select {
+  color: var(--text);
+}
+::placeholder {
+  color: var(--muted);
+  opacity: 1;
+}
+:focus-visible {
+  outline: none;
+  box-shadow: var(--focus);
+  border-radius: var(--radius-sm);
+}
+.sr-only {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  margin: -1px;
+  overflow: hidden;
+  clip: rect(0, 0, 0, 0);
+  border: 0;
+}
+
+/* ---- app shell ---- */
+.app {
+  position: relative;
+  min-height: 100vh;
+  min-height: 100dvh; /* track the dynamic viewport so mobile URL-bar show/hide doesn't add dead scroll */
+  display: flex;
+  flex-direction: column;
+  background: var(--surface-2);
+}
+/* Fixed, non-scrolling background texture: a faint brand dot-grid + soft blue/green corner glows so
+   the dark navy has depth rather than reading as flat. pointer-events:none keeps it purely decorative. */
+.app::before {
+  content: "";
+  position: fixed;
+  inset: 0;
+  z-index: 0;
+  pointer-events: none;
+  background-image:
+    radial-gradient(circle, rgba(255, 255, 255, 0.035) 1px, transparent 1.6px),
+    radial-gradient(1100px 520px at 84% -8%, rgba(var(--ochre-rgb), 0.11), transparent 58%),
+    radial-gradient(820px 560px at -6% 110%, rgba(var(--lapis-rgb), 0.1), transparent 55%);
+  background-size:
+    24px 24px,
+    100% 100%,
+    100% 100%;
+  background-repeat: repeat, no-repeat, no-repeat;
+}
+.content {
+  position: relative;
+  z-index: 1;
+  flex: 1;
+  width: 100%;
+  max-width: var(--maxw);
+  margin: 0 auto;
+  padding: 28px 24px 72px;
+}
+
+/* =============================================================================
+   Buttons — ONE system. variant (primary/accent/navy/ghost/subtle/danger) +
+   optional .on-dark (navy chrome) + size (.sm) + .icon + .chevron flair.
+   ============================================================================= */
+.btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 7px;
+  border: 1px solid transparent;
+  border-radius: var(--radius-pill);
+  padding: 9px 17px;
+  font: inherit;
+  font-weight: 600;
+  font-size: 14px;
+  letter-spacing: 0.2px;
+  line-height: 1;
+  white-space: nowrap;
+  cursor: pointer;
+  user-select: none;
+  transition:
+    background var(--t-fast) var(--ease),
+    border-color var(--t-fast) var(--ease),
+    color var(--t-fast) var(--ease),
+    box-shadow var(--t-fast) var(--ease),
+    transform var(--t-fast) var(--ease);
+}
+.btn:focus-visible {
+  box-shadow: var(--focus);
+}
+.btn:disabled {
+  opacity: 0.5;
+  cursor: default;
+  transform: none !important;
+  box-shadow: none;
+}
+.btn.sm {
+  padding: 6px 13px;
+  font-size: 13px;
+  gap: 5px;
+}
+.btn.xs {
+  padding: 5px 11px;
+  font-size: 12.5px;
+  gap: 5px;
+}
+.btn.icon {
+  padding: 0;
+  width: 34px;
+  height: 34px;
+  border-radius: 50%;
+}
+.btn.icon.sm {
+  width: 28px;
+  height: 28px;
+}
+.btn svg {
+  width: 16px;
+  height: 16px;
+  flex: 0 0 auto;
+}
+.btn.chevron::after {
+  content: "›";
+  font-weight: 700;
+  font-size: 1.1em;
+  line-height: 0;
+  transition: transform var(--t-fast) var(--ease);
+}
+.btn.chevron:hover::after {
+  transform: translateX(3px);
+}
+
+/* light-surface variants */
+.btn.primary {
+  background: var(--lapis);
+  background-image: var(--grad-blue);
+  color: #fff;
+  box-shadow: 0 2px 8px rgba(var(--lapis-rgb), 0.32);
+}
+.btn.primary:hover {
+  box-shadow: 0 6px 18px rgba(var(--lapis-rgb), 0.4);
+  transform: translateY(-1px);
+}
+.btn.primary:active {
+  transform: translateY(0);
+}
+.btn.accent {
+  background: var(--ochre);
+  color: var(--pigment-ink);
+}
+.btn.accent:hover {
+  background: var(--ochre-bright);
+  transform: translateY(-1px);
+}
+.btn.navy {
+  background: var(--ink);
+  color: #fff;
+}
+.btn.navy:hover {
+  background: var(--navy);
+}
+.btn.ghost {
+  background: transparent;
+  border-color: var(--border);
+  color: var(--text);
+}
+.btn.ghost:hover {
+  background: var(--surface-tint);
+  border-color: var(--border-strong);
+}
+.btn.subtle {
+  background: var(--surface-tint);
+  color: var(--fg);
+}
+.btn.subtle:hover {
+  background: #2c2f37;
+}
+.btn.danger {
+  background: var(--danger);
+  color: #fff;
+}
+.btn.danger:hover {
+  background: var(--danger-dark);
+}
+
+/* on-dark variants (navy topbar / viewer chrome) */
+.btn.on-dark:focus-visible {
+  box-shadow: var(--focus-on-dark);
+}
+.btn.on-dark.ghost {
+  background: transparent;
+  border-color: rgba(255, 255, 255, 0.18);
+  color: #e8ebf2;
+}
+.btn.on-dark.ghost:hover {
+  background: rgba(255, 255, 255, 0.08);
+  border-color: rgba(255, 255, 255, 0.32);
+  color: #fff;
+}
+.btn.on-dark.subtle {
+  background: rgba(255, 255, 255, 0.09);
+  color: #fff;
+}
+.btn.on-dark.subtle:hover {
+  background: rgba(255, 255, 255, 0.16);
+}
+.btn.on-dark.danger {
+  background: transparent;
+  border-color: rgba(255, 120, 120, 0.28);
+  color: #ff9d9d;
+}
+.btn.on-dark.danger:hover {
+  background: rgba(120, 30, 40, 0.4);
+  border-color: rgba(255, 120, 120, 0.5);
+  color: #ffc6c6;
+}
+
+/* =============================================================================
+   Badges / chips (shared by cards + viewer)
+   ============================================================================= */
+.badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  font-size: 11px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  padding: 3px 9px;
+  border-radius: var(--radius-pill);
+  white-space: nowrap;
+}
+.badge::before {
+  content: "";
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: currentColor;
+  opacity: 0.85;
+}
+.badge.private {
+  color: #b3ada0;
+  background: rgba(255, 255, 255, 0.08);
+}
+.badge.everyone {
+  color: var(--ochre-bright);
+  background: rgba(var(--ochre-rgb), 0.15);
+}
+.badge.restricted {
+  color: var(--lapis-bright);
+  background: rgba(var(--lapis-rgb), 0.2);
+}
+
+/* =============================================================================
+   Context menus (global so menu items composed by callers get styled)
+   ============================================================================= */
+.menu {
+  min-width: 210px;
+  padding: 6px;
+  display: flex;
+  flex-direction: column;
+  gap: 1px;
+}
+.menu-label {
+  font-size: 11px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.6px;
+  color: var(--muted);
+  padding: 7px 10px 3px;
+}
+.menu-item {
+  display: flex;
+  align-items: center;
+  gap: 11px;
+  width: 100%;
+  text-align: left;
+  border: 0;
+  background: transparent;
+  border-radius: var(--radius-sm);
+  padding: 8px 10px;
+  font: inherit;
+  font-size: 13px;
+  font-weight: 500;
+  color: var(--fg);
+  cursor: pointer;
+  transition:
+    background var(--t-fast) var(--ease),
+    color var(--t-fast) var(--ease);
+}
+.menu-item:hover,
+.menu-item:focus-visible {
+  background: var(--surface-tint);
+  outline: none;
+  box-shadow: none;
+}
+.menu-item:disabled {
+  opacity: 0.5;
+  cursor: default;
+}
+.menu-item .mi-icon {
+  width: 16px;
+  height: 16px;
+  flex: 0 0 auto;
+  color: var(--muted);
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+}
+.menu-item .mi-icon svg {
+  width: 16px;
+  height: 16px;
+}
+.menu-item:hover .mi-icon,
+.menu-item:focus-visible .mi-icon {
+  color: var(--accent);
+}
+.menu-item .mi-trail {
+  margin-left: auto;
+  color: var(--muted);
+  font-size: 1.1em;
+  line-height: 0;
+}
+.menu-item.danger {
+  color: var(--danger);
+}
+.menu-item.danger:hover,
+.menu-item.danger:focus-visible {
+  background: var(--danger-tint);
+}
+.menu-item.danger .mi-icon {
+  color: var(--danger);
+}
+.menu-sep {
+  height: 1px;
+  background: var(--border);
+  margin: 5px 4px;
+}
+
+/* =============================================================================
+   Modal (kept only for destructive confirm — DeleteDialog)
+   ============================================================================= */
+.modal-backdrop {
+  position: fixed;
+  inset: 0;
+  z-index: 50;
+  border: 0;
+  padding: 0;
+  background: rgba(var(--ink-rgb), 0.5);
+  backdrop-filter: blur(2px);
+  cursor: default;
+  animation: fade-in var(--t-fast) var(--ease);
+}
+.modal {
+  position: fixed;
+  z-index: 51;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  width: min(460px, calc(100vw - 32px));
+  max-height: calc(100vh - 48px);
+  overflow-y: auto;
+  background: var(--surface);
+  border-radius: var(--radius-card);
+  box-shadow: var(--shadow-lg);
+  padding: 24px;
+  animation: pop-in var(--t-med) var(--ease);
+}
+.modal-title {
+  margin: 0 0 12px;
+  font-size: 19px;
+}
+.modal-actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: 8px;
+  margin-top: 22px;
+}
+.muted-note {
+  color: var(--muted);
+  font-size: 13.5px;
+  margin: 10px 0 0;
+}
+.error-text {
+  color: var(--danger);
+  font-size: 13px;
+  margin: 12px 0 0;
+}
+
+/* =============================================================================
+   Sharing panel innards (shared by SharePanel — popover & inline)
+   ============================================================================= */
+.vis-grid {
+  display: grid;
+  gap: 8px;
+}
+.vis-card {
+  display: flex;
+  align-items: flex-start;
+  gap: 11px;
+  text-align: left;
+  border: 1px solid var(--border);
+  border-radius: var(--radius-md);
+  background: var(--surface);
+  padding: 11px 13px;
+  cursor: pointer;
+  font: inherit;
+  transition:
+    border-color var(--t-fast) var(--ease),
+    background var(--t-fast) var(--ease),
+    box-shadow var(--t-fast) var(--ease);
+}
+.vis-card:hover {
+  background: var(--surface-tint);
+}
+.vis-card.active {
+  border-color: var(--accent);
+  background: var(--surface-tint);
+  box-shadow: inset 0 0 0 1px var(--accent);
+}
+.vis-card .vis-ic {
+  flex: 0 0 auto;
+  width: 30px;
+  height: 30px;
+  border-radius: 8px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  background: var(--surface-tint);
+  color: var(--muted);
+}
+.vis-card.active .vis-ic {
+  background: var(--accent-grad);
+  color: var(--pigment-ink);
+}
+.vis-card .vis-ic svg {
+  width: 16px;
+  height: 16px;
+}
+.vis-title {
+  font-weight: 600;
+  font-size: 14px;
+  color: var(--fg);
+}
+.vis-sub {
+  font-size: 12.5px;
+  color: var(--muted);
+}
+.people {
+  margin-top: 14px;
+}
+.add-row {
+  display: flex;
+  gap: 8px;
+}
+.add-row input,
+.link-row input {
+  flex: 1;
+  padding: 9px 11px;
+  border: 1px solid var(--border);
+  border-radius: var(--radius-sm);
+  font: inherit;
+  font-size: 14px;
+  background: var(--surface-tint);
+  color: var(--text);
+}
+.add-row input:focus-visible,
+.link-row input:focus-visible {
+  border-color: var(--accent);
+}
+.chips {
+  list-style: none;
+  padding: 0;
+  margin: 12px 0 0;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+.chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  background: var(--surface-tint);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-pill);
+  padding: 4px 6px 4px 12px;
+  font-size: 13px;
+  color: var(--fg);
+}
+.chip button {
+  border: 0;
+  background: transparent;
+  cursor: pointer;
+  color: var(--muted);
+  font-size: 16px;
+  line-height: 1;
+  width: 20px;
+  height: 20px;
+  border-radius: 50%;
+}
+.chip button:hover {
+  background: rgba(var(--ink-rgb), 0.08);
+  color: var(--fg);
+}
+.link-row {
+  display: flex;
+  gap: 8px;
+  margin-top: 16px;
+}
+.link-row input {
+  color: var(--muted);
+  background: var(--surface-tint);
+}
+
+/* =============================================================================
+   Comment overlay (mounted inside the viewer iframe stage)
+   ============================================================================= */
+.overlay {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+}
+.overlay .catcher {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  pointer-events: auto;
+  cursor: none; /* the system cursor is replaced by the ghost pin below */
+  background: transparent;
+  border: 0;
+  padding: 0;
+  z-index: 1;
+}
+/* The ghost pin follows the cursor in comment mode — a live preview of the pin you're about to drop,
+   styled exactly like a real .pin-dot (centered on the cursor, matching where it lands). */
+.pin-ghost {
+  position: absolute;
+  transform: translate(-50%, -50%);
+  pointer-events: none;
+  width: 22px;
+  height: 22px;
+  border-radius: 50% 50% 50% 2px;
+  background: var(--ochre);
+  border: 2px solid #f4efe4;
+  box-shadow: 0 1px 5px rgba(0, 0, 0, 0.35);
+  opacity: 0.9;
+  z-index: 4;
+}
+.pin {
+  position: absolute;
+  transform: translate(-50%, -50%);
+  pointer-events: auto;
+  border: 0;
+  background: transparent;
+  padding: 0;
+  cursor: pointer;
+  z-index: 2;
+}
+.pin-dot {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 22px;
+  height: 22px;
+  padding: 0 6px;
+  border-radius: 50% 50% 50% 2px;
+  background: var(--ochre);
+  color: var(--pigment-ink);
+  border: 2px solid #f4efe4;
+  box-shadow: 0 1px 4px rgba(0, 0, 0, 0.3);
+  font-size: 11px;
+  font-weight: 700;
+}
+.pin.resolved .pin-dot {
+  background: #8b867a;
+  color: #16130e;
+}
+.pin.open .pin-dot {
+  outline: 2px solid var(--lapis);
+  outline-offset: 1px;
+}
+.pin .pin-dot {
+  transition: transform var(--t-fast) var(--ease);
+}
+/* Two-way highlight: hovering a row in the side panel lifts its pin (and vice-versa). */
+.pin.hovered .pin-dot {
+  transform: scale(1.2);
+  box-shadow: 0 3px 10px rgba(0, 0, 0, 0.45);
+}
+/* "N on other pages" — comments anchored to a different view of a multi-page artifact. Bottom-left so
+   it clears the bottom-center live-revision toast and the pins themselves. */
+.offpage {
+  position: absolute;
+  left: 14px;
+  bottom: 14px;
+  pointer-events: auto;
+  z-index: 6;
+}
+.offpage-pill {
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+  font: inherit;
+  font-size: 12.5px;
+  font-weight: 600;
+  color: var(--text);
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-pill);
+  padding: 7px 13px;
+  cursor: pointer;
+  box-shadow: var(--shadow-lg);
+  transition:
+    background var(--t-fast) var(--ease),
+    border-color var(--t-fast) var(--ease);
+}
+.offpage-pill:hover {
+  background: var(--surface-tint);
+  border-color: var(--border-strong);
+}
+.offpage-pill svg {
+  width: 14px;
+  height: 14px;
+  color: var(--ochre);
+}
+.offpage-list {
+  position: absolute;
+  left: 0;
+  bottom: calc(100% + 8px);
+  width: 250px;
+  max-width: calc(100vw - 28px);
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-card);
+  box-shadow: var(--shadow-pop);
+  padding: 8px;
+  transform-origin: left bottom;
+  animation: c-emerge 0.15s var(--ease);
+}
+.offpage-head {
+  font-size: 10.5px;
+  font-weight: 700;
+  letter-spacing: 0.5px;
+  text-transform: uppercase;
+  color: var(--muted);
+  padding: 4px 6px 6px;
+}
+.offpage-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+  padding: 6px;
+  border-radius: var(--radius-sm);
+}
+.offpage-row:hover {
+  background: var(--surface-tint);
+}
+.offpage-label {
+  font-size: 13px;
+  color: var(--text);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.offpage-count {
+  flex: 0 0 auto;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 20px;
+  height: 20px;
+  padding: 0 6px;
+  background: var(--ochre);
+  color: var(--pigment-ink);
+  border-radius: var(--radius-pill);
+  font-size: 11px;
+  font-weight: 700;
+}
+.offpage-hint {
+  font-size: 11.5px;
+  color: var(--muted);
+  padding: 7px 6px 2px;
+  line-height: 1.35;
+}
+/* Pending pin shown while composing a draft — same look as a real pin, non-interactive. */
+.pin-pending {
+  position: absolute;
+  transform: translate(-50%, -50%);
+  pointer-events: none;
+  z-index: 2;
+}
+.draft,
+.thread {
+  position: absolute;
+  pointer-events: auto;
+  background: var(--surface);
+  border: 1px solid var(--border);
+  z-index: 7;
+  /* Unfolds out of the pin: scales up from the corner nearest the pin (transform-origin is set inline
+     per-direction by cardStyle), so the card appears to come out of the pin diagonally. */
+  animation: c-emerge 0.17s var(--ease);
+}
+.draft {
+  width: 240px;
+  border-radius: var(--radius-md);
+  box-shadow: var(--shadow-lg);
+  padding: 10px;
+}
+.draft textarea,
+.reply-row textarea {
+  width: 100%;
+  resize: vertical;
+  border: 1px solid var(--border);
+  border-radius: var(--radius-sm);
+  padding: 8px;
+  font: inherit;
+}
+.draft-actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: 8px;
+  margin-top: 8px;
+}
+.thread {
+  width: 290px;
+  max-width: calc(100vw - 32px);
+  border-radius: var(--radius-card);
+  box-shadow: var(--shadow-pop);
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+}
+.thread-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 9px 12px;
+  border-bottom: 1px solid var(--border);
+}
+.thread-title {
+  font-size: 11px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.6px;
+  color: var(--muted);
+}
+.thread-head-actions {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+.link-btn {
+  border: 0;
+  background: transparent;
+  color: var(--accent);
+  font: inherit;
+  font-size: 13px;
+  font-weight: 600;
+  cursor: pointer;
+  padding: 2px 4px;
+}
+.link-btn:hover {
+  text-decoration: underline;
+}
+.link-btn:disabled {
+  color: var(--muted);
+  cursor: default;
+  text-decoration: none;
+}
+.link-btn.danger:not(:disabled) {
+  color: var(--danger);
+}
+.icon-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  border: 0;
+  background: transparent;
+  color: var(--muted);
+  cursor: pointer;
+  font-size: 18px;
+  line-height: 1;
+  width: 22px;
+  height: 22px;
+  border-radius: 50%;
+}
+.icon-btn:hover {
+  background: rgba(var(--ink-rgb), 0.08);
+  color: var(--fg);
+}
+.icon-btn.danger:hover {
+  background: var(--danger-tint);
+  color: var(--danger);
+}
+.icon-btn:disabled {
+  opacity: 0.5;
+  cursor: default;
+}
+.thread-body {
+  padding: 12px;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  max-height: 280px;
+  overflow-y: auto;
+}
+.c-item {
+  display: flex;
+  gap: 8px;
+}
+.avatar {
+  flex: 0 0 auto;
+  width: 26px;
+  height: 26px;
+  border-radius: 50%;
+  background: var(--grad-brand);
+  color: #fff;
+  font-size: 11px;
+  font-weight: 700;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+.avatar.sm {
+  width: 21px;
+  height: 21px;
+  font-size: 9.5px;
+}
+
+/* =============================================================================
+   Comments side panel (right slide-over over the artifact stage)
+   ============================================================================= */
+.cp {
+  position: absolute;
+  top: 0;
+  right: 0;
+  bottom: 0;
+  width: 340px;
+  max-width: 88vw;
+  z-index: 9;
+  display: flex;
+  flex-direction: column;
+  background: var(--surface);
+  border-left: 1px solid var(--border);
+  box-shadow: var(--shadow-lg);
+}
+.cp-head {
+  flex: 0 0 auto;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 11px 12px;
+  border-bottom: 1px solid var(--border);
+}
+.cp-title {
+  font-weight: 700;
+  font-size: 14px;
+  color: var(--text);
+}
+.cp-count {
+  font-size: 11px;
+  font-weight: 700;
+  color: var(--muted);
+  background: var(--surface-tint);
+  border-radius: var(--radius-pill);
+  padding: 1px 8px;
+}
+.cp-x {
+  margin-left: auto;
+  border: 0;
+  background: transparent;
+  color: var(--muted);
+  font-size: 20px;
+  line-height: 1;
+  cursor: pointer;
+  width: 26px;
+  height: 26px;
+  border-radius: 50%;
+}
+.cp-x:hover {
+  background: var(--surface-tint);
+  color: var(--text);
+}
+.cp-composer {
+  flex: 0 0 auto;
+  padding: 10px 12px;
+  border-bottom: 1px solid var(--border);
+}
+.cp-composer textarea,
+.cp-reply-row textarea {
+  width: 100%;
+  resize: vertical;
+  border: 1px solid var(--border);
+  border-radius: var(--radius-sm);
+  background: var(--surface-2);
+  color: var(--text);
+  padding: 8px;
+  font: inherit;
+  font-size: 13px;
+}
+.cp-composer-actions {
+  display: flex;
+  justify-content: space-between;
+  gap: 8px;
+  margin-top: 8px;
+}
+.cp-body {
+  flex: 1 1 auto;
+  overflow-y: auto;
+  padding: 4px 8px 16px;
+}
+.cp-empty {
+  color: var(--muted);
+  font-size: 13px;
+  padding: 16px 8px;
+  line-height: 1.5;
+}
+.cp-section {
+  margin-top: 6px;
+}
+.cp-sec-head {
+  font-size: 10.5px;
+  font-weight: 700;
+  letter-spacing: 0.5px;
+  text-transform: uppercase;
+  color: var(--muted);
+  margin: 10px 6px 4px;
+}
+.cp-item {
+  border-radius: var(--radius-sm);
+  border: 1px solid transparent;
+}
+.cp-item.open {
+  border-color: var(--border);
+  background: var(--surface-2);
+}
+.cp-item.resolved {
+  opacity: 0.72;
+}
+.cp-row {
+  display: flex;
+  gap: 9px;
+  width: 100%;
+  text-align: left;
+  border: 0;
+  background: transparent;
+  padding: 8px;
+  cursor: pointer;
+  border-radius: var(--radius-sm);
+}
+.cp-row:hover,
+.cp-row.hovered {
+  background: var(--surface-tint);
+}
+.cp-main {
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  flex: 1 1 auto;
+}
+.cp-meta {
+  display: flex;
+  align-items: baseline;
+  gap: 7px;
+}
+.cp-author {
+  font-size: 12.5px;
+  font-weight: 700;
+  color: var(--text);
+}
+.cp-time {
+  font-size: 11px;
+  color: var(--muted);
+}
+.cp-text {
+  font-size: 13px;
+  color: var(--text);
+  line-height: 1.4;
+  overflow: hidden;
+  display: -webkit-box;
+  -webkit-line-clamp: 3;
+  -webkit-box-orient: vertical;
+  white-space: pre-wrap;
+  word-break: break-word;
+}
+.cp-item.open .cp-text {
+  -webkit-line-clamp: unset;
+}
+.cp-sub {
+  display: flex;
+  align-items: center;
+  gap: 7px;
+  margin-top: 2px;
+  flex-wrap: wrap;
+}
+.cp-tag {
+  font-size: 10.5px;
+  font-weight: 600;
+  color: var(--muted);
+  background: var(--surface-tint);
+  border-radius: var(--radius-pill);
+  padding: 1px 7px;
+}
+.cp-tag.ok {
+  color: var(--pigment-ink);
+  background: var(--ochre);
+}
+.cp-replies {
+  font-size: 11px;
+  color: var(--muted);
+}
+.cp-thread {
+  padding: 0 8px 8px;
+}
+.cp-reply {
+  display: flex;
+  gap: 8px;
+  padding: 6px 0 6px 6px;
+}
+.cp-reply-main {
+  min-width: 0;
+}
+.cp-reply-row {
+  display: flex;
+  gap: 6px;
+  align-items: flex-end;
+  margin-top: 6px;
+}
+.cp-reply-row textarea {
+  font-size: 12.5px;
+}
+.cp-act {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  margin-top: 6px;
+}
+.cp-confirm {
+  font-size: 12.5px;
+  color: var(--text);
+  margin-right: auto;
+}
+.c-content {
+  min-width: 0;
+}
+.c-meta {
+  display: flex;
+  align-items: baseline;
+  gap: 8px;
+}
+.c-author {
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--fg);
+}
+.c-time {
+  font-size: 11px;
+  color: var(--muted);
+}
+.c-body {
+  font-size: 14px;
+  color: var(--text);
+  white-space: pre-wrap;
+  word-break: break-word;
+  margin-top: 2px;
+}
+.reply-row {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  padding: 10px 12px;
+  border-top: 1px solid var(--border);
+}
+.reply-row textarea {
+  font-size: 13px;
+}
+.reply-row .btn {
+  align-self: flex-end;
+}
+
+/* =============================================================================
+   The inscription register — labels, badges, and metadata carry the mono face
+   with tracked caps, the way an inscription differs from a letter. (Body copy
+   stays sans for reading comfort; this register is for carved labels.)
+   ============================================================================= */
+.badge,
+.menu-label,
+.thread-title,
+.cp-sec-head,
+.cp-count,
+.cp-tag,
+.cp-time,
+.c-time,
+.offpage-head,
+code {
+  font-family: var(--font-mono);
+}
+.badge {
+  letter-spacing: 0.09em;
+}
+.menu-label,
+.thread-title,
+.cp-sec-head,
+.offpage-head {
+  letter-spacing: 0.14em;
+}
+::selection {
+  background: var(--ochre-deep);
+  color: var(--fg);
+}
+
+/* The knocked corner of the slab — one chamfered corner marks a surface as "cut
+   stone". Use on border-forward surfaces (clip-path clips outer shadows, so pair
+   it with hairline borders, not elevation). */
+.chamfered {
+  clip-path: polygon(
+    0 0,
+    calc(100% - var(--chamfer)) 0,
+    100% var(--chamfer),
+    100% 100%,
+    0 100%
+  );
+}
+
+/* =============================================================================
+   Keyframes
+   ============================================================================= */
+@keyframes pop-in {
+  from {
+    opacity: 0;
+    transform: translate(-50%, -50%) scale(0.97);
+  }
+  to {
+    opacity: 1;
+    transform: translate(-50%, -50%) scale(1);
+  }
+}
+@keyframes fade-in {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+/* Comment thread/draft: scale up from the pin corner (transform-origin set inline). */
+@keyframes c-emerge {
+  from {
+    opacity: 0;
+    transform: scale(0.4);
+  }
+  to {
+    opacity: 1;
+    transform: scale(1);
+  }
+}
+/* Comment thread/draft on mobile (bottom sheet): slide up instead of scaling from a pin. */
+@keyframes c-sheet-up {
+  from {
+    opacity: 0;
+    transform: translateY(14px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.001ms !important;
+    transition-duration: 0.001ms !important;
+  }
+}
+
+/* =============================================================================
+   Responsive — touch / mobile layout (≤768px). Desktop (≥769px) is unaffected:
+   every rule here lives behind a max-width query. Page/component-specific mobile
+   tweaks live in their own scoped <style> blocks; this covers the shared shell.
+   ============================================================================= */
+@media (max-width: 768px) {
+  .content {
+    padding: 18px 16px 52px;
+  }
+  /* Anchored popovers must never run past the screen on a short viewport — cap their height and let
+     the panel scroll internally (the inner lists already scroll, but tall ones like the share panel
+     have no cap of their own). The Popover positioner keeps `left` on-screen; this guards height. */
+  :global(.popover) {
+    max-height: calc(100dvh - 16px);
+    overflow-y: auto;
+    overscroll-behavior: contain;
+  }
+  /* Comment draft + open thread dock to the bottom of the viewer stage as a sheet rather than floating
+     anchored to the pin — a pin-anchored panel clips off the screen edge on a narrow viewport. The pin
+     still marks the spot; the sheet shows the thread. (Overrides the inline left/top set per-pin.) */
+  .draft,
+  .thread {
+    position: absolute !important;
+    left: 10px !important;
+    right: 10px !important;
+    top: auto !important;
+    bottom: 10px !important;
+    margin: 0 !important;
+    width: auto !important;
+    max-width: none !important;
+    animation: c-sheet-up 0.2s var(--ease);
+  }
+  .thread {
+    max-height: 72%;
+  }
+  .thread-body {
+    flex: 1 1 auto;
+    min-height: 0;
+    max-height: none;
+  }
+}
+
+@media (max-width: 440px) {
+  .content {
+    padding: 14px 13px 44px;
+  }
+}

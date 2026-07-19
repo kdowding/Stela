@@ -1,0 +1,27 @@
+{
+  "name": "stela",
+  "version": "1.0.0",
+  "private": true,
+  "description": "Self-hosted home for agent-built artifacts — publish over MCP from any agent; stable URLs, revision history, pinned visual comments",
+  "license": "MIT",
+  "author": "Kyle Dowding",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/kdowding/Stela"
+  },
+  "type": "module",
+  "packageManager": "pnpm@11.8.0",
+  "engines": {
+    "node": ">=22.5"
+  },
+  "scripts": {
+    "dev": "pnpm --filter @stela/app dev",
+    "build": "pnpm -r --if-present build",
+    "check": "pnpm -r --if-present check",
+    "mcp": "pnpm --filter @stela/mcp dev",
+    "dev:storage": "npx --yes azurite --silent --skipApiVersionCheck --location .azurite"
+  },
+  "devDependencies": {
+    "typescript": "^5.7.0"
+  }
+}
